@@ -2,12 +2,14 @@
 A method to automatically calibrate lidar and camera
 ## Quickly start with the following steps
 1.git clone this project
-```
+```shell
 mkdir lidar_camera_calibration
 cd lidar_camera_calibration
-git clone 
-1.compile code
+git clone git@github.com:louiszengCN/lidar_camera_auto_calibration.git
+```
+2.compile code
 ```shell
+cd lidar_camera_calibration
 mkdir build
 cd build
 cmake ..
