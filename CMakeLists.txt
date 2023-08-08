@@ -20,3 +20,9 @@ target_link_libraries(gui_demo ${PCL_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES
 
 add_executable(depth_demo ./src/create_depth_pic.cpp)
 target_link_libraries(depth_demo ${PCL_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES} Qt5::Widgets)
+
+
+add_executable(auto_calib ./src/auto_calibration.cpp)
+target_link_libraries(auto_calib ${PCL_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES} )
+# target_include_directories(auto_calib PRIVATE /usr/local/include/ceres )
+

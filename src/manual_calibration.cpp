@@ -11,18 +11,14 @@
 #include <Eigen/Geometry>
 #include <boost/filesystem.hpp>
 #include <ceres/ceres.h>
-#include <iostream>
 #include <opencv2/aruco.hpp>
-#include <opencv2/opencv.hpp>
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
 #include <vector>
 #include <pcl/point_types.h>
 #include <string>
 using namespace std;
 //路径
-string image_path = "../data/2.png";
-string pointcloud_path = "../data/2.pcd";
+string image_path = "../data/img/3.png";
+string pointcloud_path = "../data/pcd/3.pcd";
 
 // 针孔的
 // 定义相机内参和畸变参数
@@ -43,7 +39,7 @@ cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -3.5293886247001022e-01, 1.49041
     //double rx, ry, rz, x, y ,z;
     //rx: 0.42 ry: -0.19 rz: 1.495 x: -0.005 y: -0.01 z: 0.01
     //double rx= 0.365, ry= -0.13, rz= 1.56, x= -0.035, y= -0.325, z= 0.13;
-    double rx= 0.42, ry= -0.19, rz= 1.495, x= -0.005, y= -0.01, z= 0.01;
+    double rx= 0.0083, ry= -0.0055, rz= -0.0140, x= 0.0291, y= 0.1029, z= -0.07670;
 
     cv::Mat rvec = (cv::Mat_<double>(3, 1) << rx, ry, rz);
     cv::Mat tvec = (cv::Mat_<double>(3, 1) << x, y, z);
@@ -52,10 +48,8 @@ cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -3.5293886247001022e-01, 1.49041
 // 定义点云类型
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
-
-
 PointCloud::Ptr pointCloud(new PointCloud);  
-cv::Mat image = cv::imread(image_path);
+
 //cv::Mat rotatedImg;  
 
 
@@ -107,7 +101,7 @@ return v1;
 }
 void projectPointCloudToImage(const PointCloud::Ptr& pointCloud, cv::Mat& image, cv::Mat _rvec, cv::Mat _tvec);
 
-void get_ro_tran(double _rx, double _ry, double _rz, double _x, double _y, double _z)
+void get_ro_tran(double _rx, double _ry, double _rz, double _x, double _y, double _z, cv::Mat image)
 {
 
     //创建变换矩阵
@@ -134,9 +128,19 @@ void get_ro_tran(double _rx, double _ry, double _rz, double _x, double _y, doubl
 // 输入点云 图片
 void projectPointCloudToImage(const PointCloud::Ptr& pointCloud, cv::Mat& image, cv::Mat _rvec, cv::Mat _tvec)
 {
+
+
+
    
     //绘图的时候需要重新创建图片，否则点云会一直在图上
-    cv::Mat image_new = cv::imread(image_path);
+    cv::Mat image_new = image;
+    // cv::imshow("1",image_new);
+    // cv::Mat rotatedImg2;
+    // cv::rotate(image_new, rotatedImg2, cv::ROTATE_90_CLOCKWISE);
+    // cv::imshow("2",rotatedImg2);
+    
+
+
     // 旋转向量转换为旋转矩阵
     cv::Mat R;
     cv::Rodrigues(_rvec, R);
@@ -170,39 +174,13 @@ void projectPointCloudToImage(const PointCloud::Ptr& pointCloud, cv::Mat& image,
         
         cv::circle(image_new, cv::Point(u, v), 1, cv::Scalar(rgb[2], rgb[1], rgb[0]), cv::FILLED);
         
+        // cv::rotate(image_new, rotatedImg2, cv::ROTATE_90_CLOCKWISE);
+        // cv::circle(rotatedImg2, cv::Point(u, v), 1, cv::Scalar(rgb[2], rgb[1], rgb[0]), cv::FILLED);
+
+        
     }
+    //逆时针转90度
 
-    //    for (const auto& point : pointCloud->points)
-    // {
-    //     // 将点的三维坐标转换为相机坐标系中的坐标
-    //     cv::Mat point3D = (cv::Mat_<double>(3, 1) << point.x, point.y, point.z);
-    //     cv::Mat point3D_cam = R * point3D + _tvec;
-    //     cv::Mat distorted_points;  // 存储带畸变的像素点坐标
-    //     cv::Mat undistorted_points;  // 存储去除畸变后的像素点坐标
-    //     // 相机坐标到像素坐标
-    //     double x = point3D_cam.at<double>(0,0)/point3D_cam.at<double>(2,0);
-    //     double y = point3D_cam.at<double>(1,0)/point3D_cam.at<double>(2,0);
-    //     double r2 = std::pow(x, 2) + std::pow(y, 2);
-    //     double x1 = x * (1 + k1 * r2 + k2 * std::pow(r2, 2)) + 2 * p1 * y * x + p2 * (r2 + 2 * std::pow(x, 2));
-    //     double y1 = y * (1 + k1 * r2 + k2 * std::pow(r2, 2)) + 2 * p2 * x * y + p1 * (r2 + 2 * std::pow(y, 2));
-    //     double u = cameraMatrix.at<double>(0,0)* x1 + cameraMatrix.at<double>(0,2);
-    //     double v = cameraMatrix.at<double>(1,1) * y1 + cameraMatrix.at<double>(1,2);
-    //     double u_distorted = cameraMatrix.at<double>(0, 0) * x1 + cameraMatrix.at<double>(0, 2);
-    //     double v_distorted = cameraMatrix.at<double>(1, 1) * y1 + cameraMatrix.at<double>(1, 2);
-        
-    //     // 存储畸变坐标
-    //     distorted_points.push_back(cv::Point2f(u_distorted, v_distorted));
-    //     cv::fisheye::undistortPoints(distorted_points, undistorted_points, cameraMatrix, distCoeffs);
-
-    //     // 根据深度设置颜色
-    //     double distance = std::sqrt(std::pow(point.x, 2) + std::pow(point.y, 2) + std::pow(point.z, 2));
-    //     double color = distance * 6.0 / 10.0;
-    //     std::vector<int> rgb = set_RGB_from_distance(color);
-    //     // 绘制投影点
-        
-    //     cv::circle(image_new, cv::Point(u_distorted, v_distorted), 1, cv::Scalar(rgb[2], rgb[1], rgb[0]), cv::FILLED);
-        
-    // }
 
 
     cv::Mat rotatedImg2;
@@ -211,6 +189,7 @@ void projectPointCloudToImage(const PointCloud::Ptr& pointCloud, cv::Mat& image,
     cv::namedWindow("Projected Point Cloud", cv::WINDOW_NORMAL);
     cv::resizeWindow("Projected Point Cloud", 800, 600);
     cv::imshow("Projected Point Cloud", rotatedImg2);
+    // cv::imshow("pcd", image_new);
     cv::waitKey(0);
 }
 // 添加其他Qt头文件，以实现其他必要的功能
@@ -218,7 +197,11 @@ void projectPointCloudToImage(const PointCloud::Ptr& pointCloud, cv::Mat& image,
 
 int main(int argc, char *argv[])
 {
-    
+    cv::Mat image = cv::imread(image_path);
+    cv::Mat rotatedImg;
+    cv::rotate(image, rotatedImg, cv::ROTATE_90_COUNTERCLOCKWISE);
+
+
     pcl::io::loadPCDFile<pcl::PointXYZ>(pointcloud_path, *pointCloud);
     
     QApplication app(argc, argv);
@@ -238,7 +221,7 @@ int main(int argc, char *argv[])
     spinBox_rx->setSingleStep(0.005);
     spinBox_rx->setValue(rx);
     QObject::connect(spinBox_rx, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-         get_ro_tran(value, ry, rz, x, y ,z);});
+         get_ro_tran(value, ry, rz, x, y ,z, rotatedImg);});
 
     //ry
     QLabel *label_ry = new QLabel("ry:");
@@ -247,7 +230,7 @@ int main(int argc, char *argv[])
     spinBox_ry->setSingleStep(0.005);
     spinBox_ry->setValue(ry);
     QObject::connect(spinBox_ry, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-         get_ro_tran(rx, value, rz, x, y ,z);});
+         get_ro_tran(rx, value, rz, x, y ,z, rotatedImg);});
 
     //rz
     QLabel *label_rz = new QLabel("rz:");
@@ -256,7 +239,7 @@ int main(int argc, char *argv[])
     spinBox_rz->setSingleStep(0.005);
     spinBox_rz->setValue(rz);
     QObject::connect(spinBox_rz, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-        get_ro_tran(rx, ry, value, x, y ,z);});
+        get_ro_tran(rx, ry, value, x, y ,z, rotatedImg);});
 
     //x
     QLabel *label_x = new QLabel("x:");
@@ -265,7 +248,7 @@ int main(int argc, char *argv[])
     spinBox_x->setSingleStep(0.005);
     spinBox_x->setValue(x);
     QObject::connect(spinBox_x, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-        get_ro_tran(rx, ry, rz, value, y ,z);});
+        get_ro_tran(rx, ry, rz, value, y ,z, rotatedImg);});
 
     //y
     QLabel *label_y = new QLabel("y:");
@@ -274,16 +257,16 @@ int main(int argc, char *argv[])
     spinBox_y->setSingleStep(0.005);
     spinBox_y->setValue(y);
     QObject::connect(spinBox_y, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-        get_ro_tran(rx, ry, rz, x, value ,z);});
+        get_ro_tran(rx, ry, rz, x, value ,z, rotatedImg);});
 
     //z
-    QLabel *label_z = new QLabel("rz:");
+    QLabel *label_z = new QLabel("z:");
     QDoubleSpinBox *spinBox_z = new QDoubleSpinBox;
     spinBox_z->setRange(-4.0, 4.0);
     spinBox_z->setSingleStep(0.005);
     spinBox_z->setValue(z);
     QObject::connect(spinBox_z, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-        get_ro_tran(rx, ry, rz, x, y , value);});
+        get_ro_tran(rx, ry, rz, x, y , value, rotatedImg);});
 
     // 添加标签和DoubleSpinBoxes到布局
     layout->addWidget(label_rx, 0, 0);

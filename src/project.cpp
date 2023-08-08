@@ -26,10 +26,10 @@ cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -3.5293886247001022e-01, 1.49041
     // cv::Mat rvec = (cv::Mat_<double>(3, 1) << rx, ry, rz);
     // cv::Mat tvec = (cv::Mat_<double>(3, 1) << x, y, z);
 
-    // cv::Mat rvec = (cv::Mat_<double>(3, 1) << -0.02498880519919072, -0.1019245237703954, 0.007855506807299784);
-    // cv::Mat tvec = (cv::Mat_<double>(3, 1) << -1.217420058762792, -0.5726543867687761, 2.569856609130538);
-    cv::Mat rvec = (cv::Mat_<double>(3, 1) << 0.012, 0.004, -0.011);
-    cv::Mat tvec = (cv::Mat_<double>(3, 1) << 0.035, 0.1, -0.015);
+    cv::Mat rvec = (cv::Mat_<double>(3, 1) << 0.0306249, 0.0137675, -0.0738891);
+    cv::Mat tvec = (cv::Mat_<double>(3, 1) << 0.204255, 0.0651235, -0.0436086);
+    // cv::Mat rvec = (cv::Mat_<double>(3, 1) << 0.012, 0.004, -0.011);
+    // cv::Mat tvec = (cv::Mat_<double>(3, 1) << 0.035, 0.1, -0.015);
     
 
     //0.012 0.004 -0.011 0.035 0.1 -0.015
@@ -136,10 +136,10 @@ int main()
 {
     // 读取点云数据
     PointCloud::Ptr pointCloud(new PointCloud);
-    pcl::io::loadPCDFile<pcl::PointXYZ>("../data/2.pcd", *pointCloud);
+    pcl::io::loadPCDFile<pcl::PointXYZ>("../data/pcd/2.pcd", *pointCloud);
 
     // 读取图像 逆时针旋转90度
-    cv::Mat image = cv::imread("../data/2.png");
+    cv::Mat image = cv::imread("../data/img/2.png");
     cv::Mat rotatedImg;
     cv::rotate(image, rotatedImg, cv::ROTATE_90_COUNTERCLOCKWISE);
     // 将点云投影到图像上
