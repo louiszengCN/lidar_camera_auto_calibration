@@ -8,3 +8,5 @@ Thank you for your understanding and patience!
 
 Best regards,
 [YOCO Team](https://github.com/louiszengCN/lidar_camera_auto_calibration)
+
+![YOCO Method Overview](gra_ab.png)
